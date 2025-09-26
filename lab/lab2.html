@@ -74,24 +74,27 @@ document.write(Math.random());
 <script type="text/javascript">
 var str1="Hello World";
 document.write(str1);
+
+document.write("<br>");
 var x=5;
-document.write(x);
-document.write("<br> ");
 var y=10;
 var z=x+y;
-document.write(z);
-document.write("<br> ");
+document.write("x + y = " + z);
+document.write("<br><br>");
 </script>
 
 <h3>Define a function: </h3>
-<script type="text/javascript">
+<script>
 function sum3(x1,x2,x3)
 {
   var sum= x1+x2+x3;
   return sum;
 }
 var k=sum3(5,6,7);
-document.write(k);
+document.write("sum3(5, 6, 7) = " + k);
+
+document.write("<br>");
+document.write("sum3(10, 20, 30) = " + sum3(10, 20, 30));
 </script>
 
 <h3>Multiplication of X1 and X2: </h3>
@@ -103,7 +106,8 @@ document.write("X1 = " + X1 + ", X2 = " + X2 + "<br>");
 document.write("X3 = X1 * X2 = " + X3);
 </script>
 
-<h2>Interactive Maps</h2>
+<h3>Interactive Maps</h3>
+<div id="map_canvas" style="width:50%; height:50%"></div>
 
 <h3>Map 1: UNC Charlotte</h3>
 <div id="map1" class="map"></div>
@@ -119,8 +123,6 @@ document.write("X3 = X1 * X2 = " + X3);
 
 <h3>Map 5: Nando's, Washington D.C.</h3>
 <div id="map5" class="map"></div>
-
-<div id="map_canvas"></div>
 
 </body>
 </html>
