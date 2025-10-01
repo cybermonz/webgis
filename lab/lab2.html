@@ -2,91 +2,122 @@
 <html>
 <head>
   <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lab 2 for Web GIS</title>
   <style>
-    html {height:100%}
-    body {height:100%; margin:0; padding:0} 
-    #map_canvas {height:50vh; width:50%}
-  </style>
-  
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBzQAuPMWL4jasGyjGDHwmbcxouzxJUw9c"></script>
-<script>
-  function initialize() {
-    var latlng = new google.maps.LatLng(35.306840, -80.73200);
-    var myOptions = {
-    zoom: 16,
-    center: latlng,
-    mapTypeId: google.maps.MapTypeId.HYBRID};
-    new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    html, body { height:100%; margin:0; padding:0; }
+    /* Make ALL maps the same size (50% of viewport) */
+    #map_canvas, .map {
+      width: 50vw;
+      height: 50vh;
+      margin: 20px auto;
+      border: 1px solid #ccc; /* optional, just to see edges */
+      display: block;
     }
-</script>
+  </style>
 
-</head> 
-<body onload="initialize()">
+  <!-- Always use HTTPS -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBzQAuPMWL4jasGyjGDHwmbcxouzxJUw9c"></script>
+
+  <script>
+    // Your original single demo map
+    function initialize() {
+      const latlng = new google.maps.LatLng(35.306840, -80.73200);
+      const myOptions = {
+        zoom: 16,
+        center: latlng,
+        mapTypeId: google.maps.MapTypeId.HYBRID
+      };
+      new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    }
+
+    // Five interactive maps replicating Lab 1
+    function initLab1Maps() {
+      const locations = [
+        { id: "map1", title: "UNC Charlotte", lat: 35.3070, lng: -80.7330, zoom: 14 },
+        { id: "map2", title: "McEniry Building", lat: 35.3071448630041, lng: -80.73008305173914, zoom: 17 },
+        { id: "map3", title: "Corniche Beach, Abu Dhabi", lat: 24.47248163050833, lng: 54.337391519885536, zoom: 15 },
+        { id: "map4", title: "Burj Khalifa, Dubai", lat: 25.197682374963026, lng: 55.274955752930495, zoom: 17 },
+        { id: "map5", title: "Nando's, Washington D.C.", lat: 38.89713385735827, lng: -77.02337423664882, zoom: 17 }
+      ];
+
+      locations.forEach(loc => {
+        const map = new google.maps.Map(document.getElementById(loc.id), {
+          center: { lat: loc.lat, lng: loc.lng },
+          zoom: loc.zoom,
+          mapTypeId: google.maps.MapTypeId.HYBRID
+        });
+
+        const marker = new google.maps.Marker({
+          position: { lat: loc.lat, lng: loc.lng },
+          map,
+          title: loc.title
+        });
+
+        const info = new google.maps.InfoWindow({
+          content: `<strong>${loc.title}</strong><br>Lat: ${loc.lat.toFixed(6)}, Lng: ${loc.lng.toFixed(6)}`
+        });
+
+        marker.addListener("click", () => info.open({ anchor: marker, map }));
+      });
+    }
+  </script>
+</head>
+
+<body onload="initialize(); initLab1Maps();">
   <h1>Lab 2 for Web GIS</h1>
   <h3>Name: Monica Layug</h3>
   <!-- Comments-->
-<h3>Current Date is September 18, 2025</h3>
-<script type="text/javascript">
-  document.write(Date());
-</script>
 
-<h3>Generate a random number: </h3>
-<script type="text/javascript">
-  document.write(Math.random());
-</script>
-<h3>Define variables and perform calculations:</h3>
+  <h3>Current Date is September 18, 2025</h3>
+  <script>document.write(Date());</script>
+
+  <h3>Generate a random number:</h3>
+  <script>document.write(Math.random());</script>
+
+  <h3>Define variables and perform calculations:</h3>
   <script>
-    van str1 = "Hello World";
-    document.write(str1);
+    var str1 = "Hello World";   // fixed 'van' -> 'var'
+    document.write(str1 + "<br>");
 
-    document.write("<br>");
     var x = 5;
     var y = 10;
     var z = x + y;
-    document.write("x + y = z");
+    document.write("x + y = " + z);  // print the value, not the literal 'z'
     document.write("<br><br>");
   </script>
 
-<h3>Define a function (sum of three numbers):</h3>
+  <h3>Define a function (sum of three numbers):</h3>
   <script>
-    function sum3(x1,x2,x3){
-      return x1+x2+x3;
-    }
-    var k = sum3(5, 6, 7);
-    document.write("sum3(5, 6, 7) = " + k);
-
-    document.write("<br>");
+    function sum3(x1, x2, x3) { return x1 + x2 + x3; }
+    document.write("sum3(5, 6, 7) = " + sum3(5, 6, 7) + "<br>");
     document.write("sum3(10, 20, 30) = " + sum3(10, 20, 30));
   </script>
 
-<h3>Multiplication of X1 and X2: </h3>
+  <h3>Multiplication of X1 and X2:</h3>
   <script>
     var X1 = 200, X2 = 300, X3 = X1 * X2;
     document.write("X1 = " + X1 + ", X2 = " + X2 + "<br>");
     document.write("X3 = X1 * X2 = " + X3);
   </script>
 
-<h3>Interactive Map (Google Maps)</h3>
-<div id="map_canvas" style="width:50%; height:50%"></div>
-
-  <h3>Interactive Maps</h3>
+  <h3>Interactive Map (Google Maps)</h3>
   <div id="map_canvas"></div>
 
-  <h3>Map 1: UNC Charlotte</h3>
+  <h3>Interactive Maps</h3>
+  <h4>Map 1: UNC Charlotte</h4>
   <div id="map1" class="map"></div>
 
-  <h3>Map 2: McEniry Building</h3>
+  <h4>Map 2: McEniry Building</h4>
   <div id="map2" class="map"></div>
 
-  <h3>Map 3: Corniche Beach, Abu Dhabi</h3>
+  <h4>Map 3: Corniche Beach, Abu Dhabi</h4>
   <div id="map3" class="map"></div>
 
-  <h3>Map 4: Burj Khalifa, Dubai</h3>
+  <h4>Map 4: Burj Khalifa, Dubai</h4>
   <div id="map4" class="map"></div>
 
-  <h3>Map 5: Nando's, Washington D.C.</h3>
+  <h4>Map 5: Nando's, Washington D.C.</h4>
   <div id="map5" class="map"></div>
 </body>
 </html>
