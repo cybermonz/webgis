@@ -6,32 +6,20 @@
   <title>Lab 2 for Web GIS</title>
   <style>
     html, body { height:100%; margin:0; padding:0; }
-    /* Make ALL maps the same size (50% of viewport) */
-    #map_canvas, .map {
+    /* Five maps: 50% viewport width & height */
+    .map {
       width: 50vw;
       height: 50vh;
       margin: 20px auto;
-      border: 1px solid #ccc; /* optional, just to see edges */
+      border: 1px solid #ccc;
       display: block;
     }
   </style>
 
-  <!-- Always use HTTPS -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBzQAuPMWL4jasGyjGDHwmbcxouzxJUw9c"></script>
 
   <script>
-    // Your original single demo map
-    function initialize() {
-      const latlng = new google.maps.LatLng(35.306840, -80.73200);
-      const myOptions = {
-        zoom: 16,
-        center: latlng,
-        mapTypeId: google.maps.MapTypeId.HYBRID
-      };
-      new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-    }
-
-    // Five interactive maps replicating Lab 1
+    // Five interactive maps
     function initLab1Maps() {
       const locations = [
         { id: "map1", title: "UNC Charlotte", lat: 35.3070, lng: -80.7330, zoom: 14 },
@@ -48,26 +36,19 @@
           mapTypeId: google.maps.MapTypeId.HYBRID
         });
 
-        const marker = new google.maps.Marker({
-          position: { lat: loc.lat, lng: loc.lng },
-          map,
-          title: loc.title
-        });
-
+        const marker = new google.maps.Marker({ position: { lat: loc.lat, lng: loc.lng }, map, title: loc.title });
         const info = new google.maps.InfoWindow({
           content: `<strong>${loc.title}</strong><br>Lat: ${loc.lat.toFixed(6)}, Lng: ${loc.lng.toFixed(6)}`
         });
-
         marker.addListener("click", () => info.open({ anchor: marker, map }));
       });
     }
   </script>
 </head>
 
-<body onload="initialize(); initLab1Maps();">
+<body onload="initLab1Maps()">
   <h1>Lab 2 for Web GIS</h1>
   <h3>Name: Monica Layug</h3>
-  <!-- Comments-->
 
   <h3>Current Date is:</h3>
   <script>document.write(Date());</script>
@@ -77,14 +58,10 @@
 
   <h3>Define variables and perform calculations:</h3>
   <script>
-    var str1 = "Hello World";   // fixed 'van' -> 'var'
+    var str1 = "Hello World";
     document.write(str1 + "<br>");
-
-    var x = 5;
-    var y = 10;
-    var z = x + y;
-    document.write("x + y = " + z);  // print the value, not the literal 'z'
-    document.write("<br><br>");
+    var x = 5, y = 10, z = x + y;
+    document.write("x + y = " + z + "<br><br>");
   </script>
 
   <h3>Define a function (sum of three numbers):</h3>
