@@ -1,54 +1,129 @@
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Lab3: Web-based Mapping Using OpenLayers</title>
+  <head>
+    <meta charset="utf-8" />
+    <title>Lab 3 — North Carolina with Azure Base Maps + WMS</title>
 
-  <!-- OpenLayers core -->
-  <script src="https://cdn.jsdelivr.net/npm/ol@v10.6.1/dist/ol.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.6.1/ol.css">
+    <!-- OpenLayers -->
+    <script src="https://cdn.jsdelivr.net/npm/ol@v7.1.0/dist/ol.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.1.0/ol.css" />
 
-  <style>
-    body { font-family: Arial, sans-serif; }
-    #map { width: 800px; height: 600px; border: 1px solid #888; }
-  </style>
-</head>
+    <!-- Layer Switcher -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.css" />
+    <script src="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.js"></script>
 
-<body>
-  <h3>Lab 3: Web-based Mapping Using OpenLayers</h3>
-  <h4>Author: Monica Layug</h4>
-  <div id="map"></div>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }
+      .map { width: 900px; height: 600px; border: 1px solid #ccc; }
+    </style>
+  </head>
 
-  <script>
-    // Azure Maps Key (must be on a single line)
-    const AZURE_KEY = '5XkeavvoPv61d5JlCImnXL0CSVyYmwFx6vkdpDUAVHc6JiNC2pPOJQQJ99BJACYeBjFhIhSbAAAgAZMP4Rzq';
+  <body>
+    <h3>Lab 3: Web-based Mapping Using OpenLayers</h3>
+    <h4>Author: Monica Layug</h4>
 
-    // --- Azure Maps Basemap ---
-    const azureRoadLayer = new ol.layer.Tile({
-      title: 'Azure Maps (Dark Grey)',
-      source: new ol.source.XYZ({
-        url:
-          'https://atlas.microsoft.com/map/tile?api-version=2022-08-01' +
-          '&tilesetId=microsoft.terra.main&zoom={z}&x={x}&y={y}' +
-          '&subscription-key=' + AZURE_KEY,
-        crossOrigin: 'anonymous'
-      })
-    });
+    <div id="map" class="map"></div>
 
-    // --- Map Setup ---
-    const map = new ol.Map({
-      target: 'map',
-      layers: [azureRoadLayer],
-      view: new ol.View({
-        projection: 'EPSG:3857',
-        center: [-10997148, 4569099], // roughly continental US
-        zoom: 4
-      })
-    });
-  </script>
-</body>
+    <script>
+      // Replace with your Azure Maps key if needed
+      var AZURE_KEY = "YOUR_AZURE_MAPS_KEY";
+
+      // Helper to build Azure XYZ sources with a given tilesetId
+      function azureXYZ(tilesetId) {
+        return new ol.source.XYZ({
+          url:
+            "https://atlas.microsoft.com/map/tile?api-version=2022-08-01" +
+            "&tilesetId=" + tilesetId +
+            "&zoom={z}&x={x}&y={y}" +
+            "&subscription-key=" + AZURE_KEY,
+          crossOrigin: "anonymous"
+        });
+      }
+
+      // Azure base maps (switch by changing tilesetId)
+      var azureRoad = new ol.layer.Tile({
+        title: "Azure Road",
+        type: "base",
+        visible: true,
+        source: azureXYZ("microsoft.base.road")
+      });
+
+      var azureGray = new ol.layer.Tile({
+        title: "Azure Grayscale",
+        type: "base",
+        visible: false,
+        source: azureXYZ("microsoft.base.grayscale")
+      });
+
+      var azureDark = new ol.layer.Tile({
+        title: "Azure Dark Gray",
+        type: "base",
+        visible: false,
+        source: azureXYZ("microsoft.base.darkgray")
+      });
+
+      var azureImagery = new ol.layer.Tile({
+        title: "Azure Imagery",
+        type: "base",
+        visible: false,
+        source: azureXYZ("microsoft.imagery")
+      });
+
+      var azureHybrid = new ol.layer.Tile({
+        title: "Azure Hybrid (Imagery + Labels)",
+        type: "base",
+        visible: false,
+        source: azureXYZ("microsoft.imagery.hybrid")
+      });
+
+      // WMS overlay: topp:states
+      var statesWMS = new ol.layer.Tile({
+        title: "States (WMS)",
+        source: new ol.source.TileWMS({
+          url: "https://ahocevar.com/geoserver/wms",
+          params: {
+            LAYERS: "topp:states",
+            TILED: true,
+            FORMAT: "image/png",
+            TRANSPARENT: true
+          },
+          serverType: "geoserver",
+          transition: 0
+        })
+      });
+
+      // Base group for LayerSwitcher
+      var baseGroup = new ol.layer.Group({
+        title: "Base maps",
+        layers: [azureRoad, azureGray, azureDark, azureImagery, azureHybrid]
+      });
+
+      // Approximate North Carolina extent (EPSG:4326), then projected to 3857
+      var ncExtent4326 = [-84.3219, 33.8423, -75.4001, 36.5881];
+      var ncExtent3857 = ol.proj.transformExtent(ncExtent4326, "EPSG:4326", "EPSG:3857");
+
+      // Center roughly at NC centroid
+      var ncCenter = ol.proj.fromLonLat([-79.0193, 35.7596]);
+
+      // Map
+      var map = new ol.Map({
+        target: "map",
+        layers: [baseGroup, statesWMS],
+        view: new ol.View({
+          center: ncCenter,
+          zoom: 7,
+          minZoom: 6,
+          maxZoom: 12,
+          extent: ncExtent3857
+        }),
+        controls: ol.control.defaults().extend([new ol.control.ScaleLine()])
+      });
+
+      // Fit to NC on load
+      map.getView().fit(ncExtent3857, { size: map.getSize(), padding: [20, 20, 20, 20], nearest: true });
+
+      // Layer switcher
+      map.addControl(new ol.control.LayerSwitcher({ tipLabel: "Layers" }));
+    </script>
+  </body>
 </html>
-
-
-
