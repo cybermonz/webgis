@@ -2,129 +2,186 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Tasmania Web GIS — Lab 3 Q4</title>
+<title>Tasmania Web GIS</title>
 
+<!-- OpenLayers -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.6.1/ol.css" />
 <script src="https://cdn.jsdelivr.net/npm/ol@v10.6.1/dist/ol.js"></script>
 
+<!-- Layer Switcher -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.css" />
 <script src="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.js"></script>
 
 <style>
-  :root{
-    --bg:#0b0f17; --ink:#e8eef7; --muted:#93a3c6; --line:#1c2433;
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background-color: #0d1117;
+    color: #e6edf3;
   }
-  *{ box-sizing:border-box; }
-  html, body { height:100%; margin:0; background:var(--bg); color:var(--ink);
-               font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-  header{
-    height:56px; display:flex; align-items:center; gap:10px; padding:0 14px;
-    border-bottom:1px solid var(--line);
-    background:linear-gradient(180deg, #0b0f17 0%, #0b0f17 60%, #0c111c 100%);
+
+  #header {
+    padding: 12px 20px;
+    background: linear-gradient(90deg, #0d1117 0%, #161b22 100%);
+    border-bottom: 1px solid #30363d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
-  header .dot{ width:10px; height:10px; border-radius:50%; background:#7aa2ff; box-shadow:0 0 14px #7aa2ff; }
-  header .title{ margin:0; font-size:14px; font-weight:700; letter-spacing:.3px; }
-  header .sub{ margin:0; font-size:12px; color:var(--muted); }
 
-  #map{ width:100%; height:calc(100vh - 56px); }
+  #header h3, #header h4 {
+    margin: 0;
+  }
 
-  /* Keep OL controls visible and tidy */
-  .ol-control{ filter: drop-shadow(0 8px 16px rgba(0,0,0,.35)); }
-  .ol-scale-line{ background:#0c111caa; border-color:#253049; color:#d7e3ff; }
-  .ol-layerswitcher{ top:10px; right:10px; } /* top-right */
+  #header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #58a6ff;
+  }
+
+  #header h4 {
+    font-size: 13px;
+    font-weight: 400;
+    color: #8b949e;
+  }
+
+  #map {
+    width: 100%;
+    height: calc(100vh - 60px);
+    border-top: 1px solid #21262d;
+  }
+
+  /* Make OpenLayers controls look modern */
+  .ol-control {
+    background-color: #161b22 !important;
+    border-radius: 6px !important;
+    border: 1px solid #30363d !important;
+    color: #e6edf3 !important;
+  }
+
+  .ol-zoom {
+    top: 0.8em;
+    left: 0.8em;
+  }
+
+  .ol-layerswitcher {
+    top: 0.8em;
+    right: 0.8em;
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 8px !important;
+  }
+
+  .layer-switcher {
+    color: #e6edf3;
+  }
+
+  .ol-layerswitcher button {
+    background-color: #161b22 !important;
+    color: #e6edf3 !important;
+  }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="dot"></div>
+<div id="header">
   <div>
-    <p class="title">Tasmania Web GIS</p>
-    <p class="sub">Lab 3 • Q4 • Author: Monica Layug</p>
+    <h3>Lab 3: Question 4 — Tasmania Web GIS</h3>
+    <h4>Author: Monica Layug</h4>
   </div>
-</header>
+</div>
 
 <div id="map"></div>
 
 <script>
-/* -------- Minimal config (stable) -------- */
 const AZURE_KEY = "5XkeavvoPv61d5JlCImnXL0CSVyYmwFx6vkdpDUAVHc6JiNC2pPOJQQJ99BJACYeBjFhIhSbAAAgAZMP4Rzq";
-const WMS_URL   = "https://data.stategrowth.tas.gov.au/geoserver/ows";
-const PROJ      = ol.proj.get("EPSG:3857");
-const TAS_CENTER = ol.proj.fromLonLat([146.8, -42.0]);
+const wmsUrl = "https://data.stategrowth.tas.gov.au/geoserver/ows";
 
-/* Basemaps
-   - OSM ON by default (no key, guaranteed to show)
-   - Azure Road available via layer switcher
-*/
-const baseOSM = new ol.layer.Tile({
-  title: "OpenStreetMap",
-  type: "base",
-  visible: true,
-  source: new ol.source.OSM()
-});
+// Tasmania center
+const tasCenter = ol.proj.fromLonLat([146.8, -42.0]);
 
-const baseAzureRoad = new ol.layer.Tile({
+// Base layer: Azure Road
+const azureRoad = new ol.layer.Tile({
   title: "Azure Maps Road",
   type: "base",
-  visible: false,
+  visible: true,
   source: new ol.source.XYZ({
     url: `https://atlas.microsoft.com/map/tile?api-version=2022-08-01&tilesetId=microsoft.base.road&zoom={z}&x={x}&y={y}&subscription-key=${AZURE_KEY}`,
-    maxZoom: 19,
-    crossOrigin: "anonymous"
+    crossOrigin: "anonymous",
+    maxZoom: 19
   })
 });
 
-/* Helper: GeoServer WMS layer in EPSG:3857 (reliable tiling) */
-function wmsTile(layerName, niceTitle){
-  return new ol.layer.Tile({
-    title: niceTitle,
-    visible: false,
-    source: new ol.source.TileWMS({
-      url: WMS_URL,
-      params: {
-        LAYERS: layerName,
-        STYLES: "",
-        FORMAT: "image/png",
-        TRANSPARENT: true,
-        VERSION: "1.3.0",
-        CRS: "EPSG:3857",
-        TILED: true
-      },
-      serverType: "geoserver",
-      crossOrigin: "anonymous"
-    })
-  });
-}
+// WMS layers
+const carriageways = new ol.layer.Tile({
+  title: "Carriageways (WMS)",
+  source: new ol.source.TileWMS({
+    url: wmsUrl,
+    params: {
+      LAYERS: "ssg:GEO_CARRIAGEWAY",
+      FORMAT: "image/png",
+      TRANSPARENT: true,
+      VERSION: "1.3.0",
+      CRS: "CRS:84"
+    },
+    serverType: "geoserver",
+    crossOrigin: "anonymous"
+  }),
+  visible: true
+});
 
-/* Overlays (start with Carriageways on) */
-const lyrCarriageways = wmsTile("ssg:GEO_CARRIAGEWAY", "Carriageways (WMS)");
-const lyrCadastre     = wmsTile("pam:GEO_CADASTRE",    "Cadastre Parcels (WMS)");
-const lyrBusTrips     = wmsTile("ssg:GEO_BRM_TRIP",    "Bus Trips (WMS)");
-lyrCarriageways.setVisible(true);
-lyrCarriageways.setOpacity(0.95);
-lyrCadastre.setOpacity(0.85);
-lyrBusTrips.setOpacity(0.95);
+const cadastre = new ol.layer.Tile({
+  title: "Cadastre Parcels (WMS)",
+  source: new ol.source.TileWMS({
+    url: wmsUrl,
+    params: {
+      LAYERS: "pam:GEO_CADASTRE",
+      FORMAT: "image/png",
+      TRANSPARENT: true,
+      VERSION: "1.3.0",
+      CRS: "CRS:84"
+    },
+    serverType: "geoserver",
+    crossOrigin: "anonymous"
+  }),
+  visible: false
+});
 
-/* Map */
+const busTrips = new ol.layer.Tile({
+  title: "Bus Trips (WMS)",
+  source: new ol.source.TileWMS({
+    url: wmsUrl,
+    params: {
+      LAYERS: "ssg:GEO_BRM_TRIP",
+      FORMAT: "image/png",
+      TRANSPARENT: true,
+      VERSION: "1.3.0",
+      CRS: "CRS:84"
+    },
+    serverType: "geoserver",
+    crossOrigin: "anonymous"
+  }),
+  visible: false
+});
+
+// Map
 const map = new ol.Map({
   target: "map",
   layers: [
-    new ol.layer.Group({ title: "Base Maps", layers: [baseOSM, baseAzureRoad] }),
-    new ol.layer.Group({ title: "Tasmania Overlays", layers: [lyrCarriageways, lyrCadastre, lyrBusTrips] })
+    new ol.layer.Group({ title: "Base Maps", layers: [azureRoad] }),
+    new ol.layer.Group({ title: "Tasmania Overlays", layers: [carriageways, cadastre, busTrips] })
   ],
-  view: new ol.View({ center: TAS_CENTER, zoom: 7, projection: PROJ }),
-  controls: ol.control.defaults({ attribution: true }).extend([ new ol.control.ScaleLine() ])
+  view: new ol.View({
+    center: tasCenter,
+    zoom: 7
+  }),
+  controls: [
+    new ol.control.Zoom(),
+    new LayerSwitcher({ tipLabel: "Layers", groupSelectStyle: "children" })
+  ]
 });
-
-/* Layer Switcher (default placement: top-right) */
-const layerSwitcher = new LayerSwitcher({
-  activationMode: "click",
-  startActive: true,
-  groupSelectStyle: "children"
-});
-map.addControl(layerSwitcher);
 </script>
+
 </body>
 </html>
