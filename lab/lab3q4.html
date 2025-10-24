@@ -17,9 +17,10 @@
     --bg: #0d1117;
     --panel: #161b22;
     --accent: #58a6ff;
-    --muted: #9da7b8;
+    --muted: #8b949e;
     --border: #30363d;
-    --text: #f0f6fc;
+    --text: #e6edf3;
+    --toggle-text: #c9d1d9; /* darker text for toggle box */
   }
 
   html, body {
@@ -117,22 +118,21 @@
     background: var(--panel) !important;
     border: 1px solid var(--border) !important;
     border-radius: 8px !important;
-    color: var(--text) !important;
     box-shadow: 0 4px 14px rgba(0,0,0,0.5);
   }
 
-  /* make text inside the layer panel brighter for legibility */
+  /* Darker, more legible toggle text */
   .ol-layerswitcher ul,
   .ol-layerswitcher li,
-  .ol-layerswitcher label,
-  .ol-layerswitcher input {
-    color: var(--text) !important;
+  .ol-layerswitcher label {
+    color: var(--toggle-text) !important;
     font-size: 13px !important;
-    font-weight: 500 !important;
+    font-weight: 400 !important;
   }
 
   .ol-layerswitcher .group > label {
     color: var(--accent) !important;
+    font-weight: 500 !important;
   }
 
   .ol-layerswitcher input[type="checkbox"] {
@@ -141,7 +141,7 @@
 
   .ol-layerswitcher button {
     background: transparent !important;
-    color: var(--text) !important;
+    color: var(--toggle-text) !important;
   }
 
   .ol-zoom {
