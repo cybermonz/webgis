@@ -23,7 +23,7 @@
 
   <script>
     // Azure Maps Key (must be on a single line)
-    const AZURE_KEY = '81u9AnyuE91GBupq2rrMNIytJcQQ6dExViU2bLHif4cC9VSKQpuIJQQJ99BJACYeBjFNMnj2AAAgAZMP4Q3s';
+    const AZURE_KEY = '5XkeavvoPv61d5JlCImnXL0CSVyYmwFx6vkdpDUAVHc6JiNC2pPOJQQJ99BJACYeBjFhIhSbAAAgAZMP4Rzq';
 
     // --- Azure Maps Basemap ---
     const azureRoadLayer = new ol.layer.Tile({
