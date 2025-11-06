@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<span id="whichBase1">Current: OSM</span>
+</div>
+<div id="map1" aria-label="Leaflet map 1"></div>
+<div id="status1" aria-live="polite"></div>
+
+<script>
+// ---- helpers ----
+const status1 = document.getElementById('status1');
+function msg1(t, cls='ok'){ status1.innerHTML = `<span class="${cls}">${t}</span>`; console.log(`[STATUS:${cls}]`, t); }
+function warn1(t){ msg1(t,'warn'); } function err1(t){ msg1(t,'err'); }
+
+// ---- base layers ----
+const osm1 = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+maxZoom: 19,
+attribution: '&copy; OpenStreetMap contributors'
+});
+const esriImg1 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+maxZoom: 19,
+attribution: 'Tiles &copy; Esri'
+});
+
+// ---- map ----
+const map1 = L.map('map1', {
+center: [39.5, -98.5], // continental US
+zoom: 4,
+layers: [osm1]
+});
+
+// ---- WMS overlay (Geoserver topp:states) ----
+const statesWMS1 = L.tileLayer.wms('https://ahocevar.com/geoserver/wms', {
+layers: 'topp:states',
+format: 'image/png',
+transparent: true,
+version: '1.1.1'
+}).addTo(map1);
+
+// ---- UI wiring ----
+document.querySelectorAll("input[name='basemap1']").forEach(el => {
+el.addEventListener('change', e => {
+const v = e.target.value;
+if (v === 'osm'){ map1.addLayer(osm1); map1.removeLayer(esriImg1); }
+if (v === 'esri'){ map1.addLayer(esriImg1); map1.removeLayer(osm1); }
+document.getElementById('whichBase1').textContent = `Current: ${v==='osm'?'OSM':'ESRI Imagery'}`;
+// verify visibility outcome
+setTimeout(()=>{
+const ok = (v==='osm' && map1.hasLayer(osm1) && !map1.hasLayer(esriImg1)) ||
+(v==='esri' && map1.hasLayer(esriImg1) && !map1.hasLayer(osm1));
+if(!ok) warn1('The radio button and the checkbox does not work.'); else msg1('Tiles loaded.');
+},0);
+});
+});
+
+document.getElementById('wms1Toggle').addEventListener('change', e => {
+const on = e.target.checked;
+if (on && !map1.hasLayer(statesWMS1)) map1.addLayer(statesWMS1);
+if (!on && map1.hasLayer(statesWMS1)) map1.removeLayer(statesWMS1);
+setTimeout(()=>{ if(map1.hasLayer(statesWMS1)!==on) warn1('The radio button and the checkbox does not work.'); },0);
+});
+
+// ---- basic error diagnostics ----
+// Leaflet doesn't expose tileloadstart/end globally; we add listeners per layer
+function attachTileEvents(layer){
+layer.on('tileerror', ()=> err1('Please verify the OSM and ESRI World Imagery as they disappear.'));
+layer.on('load', ()=> msg1('Tiles loaded.'));
+layer.on('loading', ()=> msg1('Loading tiles…'));
+}
+[osm1, esriImg1, statesWMS1].forEach(attachTileEvents);
+
+msg1('Map initialized. Switch base maps or toggle WMS to test.');
+</script>
+</body>
+</html>
+
